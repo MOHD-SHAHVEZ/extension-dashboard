@@ -1,0 +1,127 @@
+@startuml
+class com.gaur.backend.controller.AuthController {
+- UserService userService
+- JwtService jwtService
+- PasswordEncoder encoder
++ ResponseEntity<?> login(AuthRequest)
++ ResponseEntity<?> register(AuthRequest)
++ ResponseEntity<?> registerDefaults()
+}
+
+
+class com.gaur.backend.model.Summary {
+- Long id
+- String title
+- String excerpt
+- String content
+- String sourceUrl
+- String createdAt
+- boolean pinned
+- String owner
+}
+
+class com.gaur.backend.model.AppUser {
+- Long id
+- String username
+- String password
+- String role
+}
+
+class com.gaur.backend.dto.AuthResponse {
+- String token
+- String username
+- String role
+}
+
+class com.gaur.backend.dto.SummaryDto {
++ Long id
++ String title
++ String excerpt
++ String content
++ String sourceUrl
++ Boolean pinned
+}
+
+class com.gaur.backend.BackendApplication {
++ {static} void main(String[])
+}
+
+class com.gaur.backend.service.JwtService {
+- String secret
+- long expMs
++ String createToken(String,String)
++ String getUsernameFromToken(com.auth0.jwt.interfaces.DecodedJWT)
++ com.auth0.jwt.interfaces.DecodedJWT verify(String)
+}
+
+
+class com.gaur.backend.config.JwtAuthFilter {
+- JwtService jwtService
++ <<Create>> JwtAuthFilter(JwtService)
+# void doFilterInternal(HttpServletRequest,HttpServletResponse,FilterChain)
+}
+
+
+class com.gaur.backend.service.UserService {
+- UserRepository userRepo
++ Optional<AppUser> findByUsername(String)
++ AppUser save(AppUser)
+}
+
+
+interface com.gaur.backend.repository.UserRepository {
+~ Optional<AppUser> findByUsername(String)
+}
+
+class com.gaur.backend.dto.AuthRequest {
+- String username
+- String password
+}
+
+class com.gaur.backend.config.SecurityConfig {
+- UserService userService
+- JwtService jwtService
++ PasswordEncoder passwordEncoder()
++ UserDetailsService userDetailsService()
++ AuthenticationEntryPoint restAuthenticationEntryPoint()
++ SecurityFilterChain filterChain(HttpSecurity)
+}
+
+
+class com.gaur.backend.controller.AdminController {
+- SummaryRepository summaryRepo
+- UserRepository userRepo
++ Map<String,Object> getStats()
+}
+
+
+interface com.gaur.backend.repository.SummaryRepository {
+~ List<Summary> findByOwnerOrderByIdDesc(String)
+}
+
+class com.gaur.backend.controller.SummaryController {
+- SummaryService summaryService
++ List<Summary> listAll(HttpServletRequest)
++ Summary getById(Long,HttpServletRequest)
++ Summary create(Summary,HttpServletRequest)
++ Summary update(Long,Summary,HttpServletRequest)
++ String delete(Long,HttpServletRequest)
+}
+
+
+class com.gaur.backend.service.SummaryService {
+- SummaryRepository repo
++ List<Summary> findByOwner(String)
++ List<Summary> findAll()
++ Summary save(Summary)
++ void delete(Long)
++ Summary findById(Long)
+}
+
+
+
+
+org.springframework.web.filter.OncePerRequestFilter <|-- com.gaur.backend.config.JwtAuthFilter
+org.springframework.data.jpa.repository.JpaRepository <|-- com.gaur.backend.repository.UserRepository
+org.springframework.data.jpa.repository.JpaRepository <|-- com.gaur.backend.repository.SummaryRepository
+@enduml
