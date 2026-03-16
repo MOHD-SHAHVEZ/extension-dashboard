@@ -1,0 +1,37 @@
+# === IDE / Editor ===
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+
+# === OS Files ===
+Thumbs.db
+.DS_Store
+
+# === Node / Frontend ===
+node_modules/
+Frontend/node_modules/
+Frontend/.env
+.env
+.env.local
+.env.*.local
+
+# === Build Output ===
+Frontend/dist/
+Frontend/build/
+backend/target/
+
+# === ML Model Folder (not needed in repo) ===
+model/
+
+# === Java / Spring Boot ===
+backend/.idea/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# === Logs ===
+*.log
+npm-debug.log*
+
+# === Package lock (optional, uncomment if you don't want it tracked) ===
+# Frontend/package-lock.json
