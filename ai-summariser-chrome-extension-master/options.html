@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Set API Key</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding:20px; max-width:520px; }
+    input { width:100%; padding:10px; font-size:14px; margin-bottom:8px; }
+    button { padding:10px 14px; font-weight:bold; cursor:pointer; }
+    #status { margin-top:10px; font-size:13px; }
+    .hint { font-size:12px; color:#555; margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <h3>Enter API key (save once)</h3>
+  <div class="hint">Paste your Gemini / backend API key below. It will be stored locally in this browser only.</div>
+
+  <input id="apiKey" placeholder="Paste API key here" autocomplete="off" />
+  <div style="display:flex; gap:8px;">
+    <button id="saveBtn">Save to Local Storage</button>
+    <button id="clearBtn" style="background:#ef4444;color:#fff;">Clear</button>
+  </div>
+
+  <div id="status"></div>
+
+  <script src="options_local.js"></script>
+</body>
+</html>
