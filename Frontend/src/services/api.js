@@ -1,5 +1,7 @@
+
+
 // src/services/api.js
-const BASE = "http://localhost:8080"; // backend base (no /api here)
+const BASE = import.meta.env.VITE_API_BASE_URL; // backend base (no /api here)
 
 function makeError(details) {
   const err = new Error(details.message || `API error ${details.status || ""}`);

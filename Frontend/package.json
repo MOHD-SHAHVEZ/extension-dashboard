@@ -17,6 +17,7 @@
     "@tailwindcss/postcss": "^4.1.17",
     "@tinymce/tinymce-react": "^6.3.0",
     "axios": "^1.13.2",
+    "env": "^0.0.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.553.0",
     "postcss": "^8.5.6",
