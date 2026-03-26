@@ -2,13 +2,13 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "../Pages/Login";
-import Signup from "../Pages/Signup";
-import Dashboard from "../Pages/Dashboard";
-import SummariesPage from "../Pages/Summaries";
-import SummaryDetail from "../Pages/SummaryDetail";   // ⭐ ADD THIS
-import NotFound from "../Pages/NotFound";
-import AdminDashboard from "../Pages/AdminDashboard";
+import Login from "../pages/Login";
+import Signup from "../pages/Signup";
+import Dashboard from "../pages/Dashboard";
+import SummariesPage from "../pages/Summaries";
+import SummaryDetail from "../pages/SummaryDetail";   // ⭐ ADD THIS
+import NotFound from "../pages/NotFound";
+import AdminDashboard from "../pages/AdminDashboard";
 import SettingsPage from "../pages/Settings";
 
 export default function AppRouter() {
