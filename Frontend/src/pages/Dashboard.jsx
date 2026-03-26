@@ -30,7 +30,7 @@ export default function Dashboard() {
     loadSummaries();
   }, []);
 
-  // Only pinned items to show on dashboard
+  // Only pinned items to show on dashboardm
   const pinned = summaries.filter(s => !!s.pinned);
 
   // Unpin handler (toggle pinned -> false)
