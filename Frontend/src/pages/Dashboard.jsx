@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import SummaryCard from "../components/SummaryCard";
-import Sidebar from "../components/sidebar";
+import Sidebar from "../components/Sidebar";
 import { getSummaries, updateSummary } from "../services/api";
 import { useToast } from "../context/ToastContext";
 
