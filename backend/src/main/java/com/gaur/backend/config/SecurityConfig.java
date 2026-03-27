@@ -35,7 +35,7 @@ public class SecurityConfig {
     private final UserService userService;
     private final JwtService jwtService;
 
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080}")
+    @Value("${app.cors.allowed-origins:http://localhost:5173,https://gentle-conkies-c6a54b.netlify.app,http://127.0.0.1:5173,http://localhost:8080}")
     private String allowedOriginsCsv;
 
     @Bean
@@ -93,19 +93,41 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(e -> e.authenticationEntryPoint(restAuthenticationEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
-                        // allow public auth endpoints and actuator
+                        // --- YE LINE ADD KAREIN ---
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        // --------------------------
+
                         .requestMatchers("/api/auth/**", "/auth/**", "/actuator/**").permitAll()
-                        // admin endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // static or public resources if any
                         .requestMatchers("/public/**", "/static/**").permitAll()
-                        // other endpoints require auth
                         .anyRequest().authenticated()
                 );
 
-        // register JWT filter BEFORE UsernamePasswordAuthenticationFilter
         http.addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//                .csrf(csrf -> csrf.disable())
+//                .exceptionHandling(e -> e.authenticationEntryPoint(restAuthenticationEntryPoint()))
+//                .authorizeHttpRequests(auth -> auth
+//                        // allow public auth endpoints and actuator
+//                        .requestMatchers("/api/auth/**", "/auth/**", "/actuator/**").permitAll()
+//                        // admin endpoints
+//                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+//                        // static or public resources if any
+//                        .requestMatchers("/public/**", "/static/**").permitAll()
+//                        // other endpoints require auth
+//                        .anyRequest().authenticated()
+//                );
+//
+//        // register JWT filter BEFORE UsernamePasswordAuthenticationFilter
+//        http.addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
 }
