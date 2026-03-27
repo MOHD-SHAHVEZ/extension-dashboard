@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components/sidebar";
+import Sidebar from "../components/sidebar.jsx";
 import Chart from "../components/Chart";
 import Table from "../components/Table";
 import { getStats, getSummaries } from "../services/api";
