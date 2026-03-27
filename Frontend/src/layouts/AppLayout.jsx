@@ -1,6 +1,6 @@
 // src/layouts/AppLayout.jsx
 import React, { useState } from "react";
-import Sidebar from "../components/sidebar";
+import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 
 export default function AppLayout({ children }) {
