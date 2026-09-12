@@ -78,7 +78,7 @@ coverage/
 htmlcov/
 .pytest_cache/
 
-# === Misc ===
-model/
+# === Misc (root ML folder only — do not ignore Java package .../model/) ===
+/model/
 *.orig
 .cache/
