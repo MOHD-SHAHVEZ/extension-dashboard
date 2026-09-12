@@ -1,21 +1,22 @@
 package com.gaur.backend.config;
 
-import com.gaur.backend.service.JwtService;
 import com.gaur.backend.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,13 +30,34 @@ import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserService userService;
-    private final JwtService jwtService;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final OtpRateLimitFilter otpRateLimitFilter;
 
-    @Value("${app.cors.allowed-origins:http://localhost:5173,https://gentle-conkies-c6a54b.netlify.app,http://127.0.0.1:5173,http://localhost:8080}")
+    public SecurityConfig(UserService userService, JwtAuthFilter jwtAuthFilter, OtpRateLimitFilter otpRateLimitFilter) {
+        this.userService = userService;
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.otpRateLimitFilter = otpRateLimitFilter;
+    }
+
+    @Bean
+    public FilterRegistrationBean<JwtAuthFilter> jwtAuthFilterRegistration(JwtAuthFilter filter) {
+        FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<OtpRateLimitFilter> otpRateLimitFilterRegistration(OtpRateLimitFilter filter) {
+        FilterRegistrationBean<OtpRateLimitFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173,https://*.vercel.app}")
     private String allowedOriginsCsv;
 
     @Bean
@@ -73,12 +95,19 @@ public class SecurityConfig {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
+        if (origins.isEmpty()) origins = List.of("*");
         cfg.setAllowedOriginPatterns(origins);
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
-        cfg.setAllowedHeaders(List.of("*"));
-        cfg.setAllowCredentials(true);
-        // Expose Authorization header if client needs it
+        cfg.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With"
+        ));
         cfg.setExposedHeaders(List.of("Authorization"));
+        cfg.setAllowCredentials(false);
+        cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         // apply to all paths
@@ -91,19 +120,34 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .securityContext(sc -> sc
+                        .requireExplicitSave(false)
+                        .securityContextRepository(new RequestAttributeSecurityContextRepository())
+                )
                 .exceptionHandling(e -> e.authenticationEntryPoint(restAuthenticationEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
                         // --- YE LINE ADD KAREIN ---
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // --------------------------
 
-                        .requestMatchers("/api/auth/**", "/auth/**", "/actuator/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/verify-otp",
+                                "/api/auth/resend-otp",
+                                "/api/auth/register-defaults",
+                                "/api/otp/**",
+                                "/auth/**",
+                                "/actuator/**"
+                        ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/public/**", "/static/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
-        http.addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(otpRateLimitFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

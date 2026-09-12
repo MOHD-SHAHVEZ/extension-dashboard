@@ -1,8 +1,14 @@
-HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+# Local Spring overrides (do not commit real secrets)
+.env
+.env.*
+!.env.example
+application-local.properties
+application-secret.properties
 
 ### STS ###
 .apt_generated

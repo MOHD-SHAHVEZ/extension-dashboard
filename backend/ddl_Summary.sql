@@ -1,12 +1,16 @@
-CREATE TABLE summary
+-- Reference DDL for PostgreSQL (Hibernate ddl-auto=update also creates these).
+-- Create DB once:  CREATE DATABASE summaries_db;
+
+CREATE TABLE IF NOT EXISTS summary
 (
-    id         BIGINT AUTO_INCREMENT NOT NULL,
-    title      VARCHAR(255)          NULL,
-    excerpt    VARCHAR(2000)         NULL,
-    content    VARCHAR(10000)        NULL,
-    source_url VARCHAR(255)          NULL,
-    created_at VARCHAR(255)          NULL,
-    pinned     BIT(1)                NOT NULL,
-    owner      VARCHAR(255)          NULL,
-    CONSTRAINT pk_summary PRIMARY KEY (id)
+    id         BIGSERIAL PRIMARY KEY,
+    title      VARCHAR(255),
+    excerpt    VARCHAR(2000),
+    content    VARCHAR(10000),
+    source_url VARCHAR(255),
+    created_at VARCHAR(255),
+    pinned     BOOLEAN NOT NULL DEFAULT FALSE,
+    owner      VARCHAR(255)
 );
+
+CREATE INDEX IF NOT EXISTS idx_summary_owner ON summary (owner);
