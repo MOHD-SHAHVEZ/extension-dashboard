@@ -16,15 +16,15 @@ const sampleData = [
 
 export default function Chart({ data = sampleData }) {
   return (
-    <div className="bg-blue-700 text-white rounded-lg p-4 shadow">
-      <h3 className="text-lg font-semibold mb-2">Summary Statistics</h3>
-      <div className="h-48">
+    <div className="bg-indigo-700 text-white rounded-2xl p-4 sm:p-5 shadow-sm min-w-0">
+      <h3 className="text-[15px] sm:text-lg font-semibold mb-2">Summary Statistics</h3>
+      <div className="h-40 sm:h-48 -ml-2 sm:ml-0">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            <XAxis dataKey="name" stroke="#cfe8ff" />
-            <YAxis stroke="#cfe8ff" />
+          <LineChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+            <XAxis dataKey="name" stroke="#cfe8ff" tick={{ fontSize: 11 }} />
+            <YAxis stroke="#cfe8ff" tick={{ fontSize: 11 }} width={28} />
             <Tooltip />
-            <Line type="monotone" dataKey="value" stroke="#1e40af" strokeWidth={3} dot={false} />
+            <Line type="monotone" dataKey="value" stroke="#e0e7ff" strokeWidth={3} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

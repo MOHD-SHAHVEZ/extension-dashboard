@@ -1,4 +1,3 @@
-// src/components/ChangePasswordModal.jsx
 import React, { useState } from "react";
 import { changePassword } from "../services/api";
 import { useToast } from "../context/ToastContext";
@@ -29,81 +28,48 @@ export default function ChangePasswordModal({ open, onClose }) {
 
     setLoading(true);
     try {
-      if (typeof changePassword !== "function") {
-        // if backend function not available - simulate success
-        localStorage.setItem("fake_password_change", Date.now().toString());
-        toast.push("Password changed (local simulation)", { type: "success" });
-        onClose();
-        return;
-      }
-
       await changePassword({ currentPassword, newPassword });
       toast.push("Password changed successfully", { type: "success" });
-      // clear fields
       setCurrentPassword("");
       setNewPassword("");
       setConfirm("");
       onClose();
     } catch (err) {
-      console.error("changePassword error", err);
-      const message = err?.body?.message || err?.message || "Failed to change password";
-      toast.push(message, { type: "error" });
+      toast.push(err?.body?.message || err?.message || "Failed to change password", { type: "error" });
     } finally {
       setLoading(false);
     }
   }
 
+  const field = "w-full h-12 px-4 rounded-2xl bg-slate-50 border border-transparent text-[14px] outline-none focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-50";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold">Change Password</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">✖</button>
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/40" onClick={onClose} />
+      <form onSubmit={handleSubmit} className="relative w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl">
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-indigo-500">Security</p>
+            <h3 className="text-xl font-semibold text-slate-900">Change password</h3>
+          </div>
+          <button type="button" onClick={onClose} className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-400">
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Current password</label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full border rounded-lg p-2"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">New password</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full border rounded-lg p-2"
-              required
-            />
-            <div className="text-xs text-gray-400 mt-1">Use at least 6 characters.</div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Confirm new password</label>
-            <input
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="w-full border rounded-lg p-2"
-              required
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-gray-200">Cancel</button>
-            <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg bg-blue-600 text-white">
-              {loading ? "Saving..." : "Change Password"}
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="space-y-3">
+          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current password" className={field} required />
+          <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password (min 6)" className={field} required />
+          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirm new password" className={field} required />
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="h-11 px-4 rounded-full text-[13px] font-semibold text-slate-600 hover:bg-slate-100">
+            Cancel
+          </button>
+          <button type="submit" disabled={loading} className="h-11 px-5 rounded-full bg-indigo-600 text-white text-[13px] font-semibold disabled:opacity-60">
+            {loading ? "Saving…" : "Update password"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

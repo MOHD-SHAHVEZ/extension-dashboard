@@ -5,19 +5,19 @@ import React from "react"
 
 export default function Table({ columns = [], rows = [] }) {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <table className="w-full">
-        <thead className="bg-slate-100 text-left">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
+      <table className="w-full min-w-[520px]">
+        <thead className="bg-slate-50 text-left">
           <tr>
-            {columns.map((c, i) => <th key={i} className="px-6 py-3 text-sm font-medium text-gray-700">{c.label}</th>)}
+            {columns.map((c, i) => <th key={i} className="px-3 sm:px-6 py-3 text-[12px] sm:text-sm font-semibold text-slate-600 whitespace-nowrap">{c.label}</th>)}
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (
-            <tr><td colSpan={columns.length} className="px-6 py-4 text-gray-500">No data</td></tr>
+            <tr><td colSpan={columns.length} className="px-3 sm:px-6 py-8 text-center text-slate-400 text-sm">No data</td></tr>
           ) : rows.map((r, idx) => (
-            <tr key={idx} className="border-t">
-              {columns.map((c, j) => <td key={j} className="px-6 py-3 text-sm text-gray-700">{c.render ? c.render(r) : r[c.key]}</td>)}
+            <tr key={idx} className="border-t border-slate-100">
+              {columns.map((c, j) => <td key={j} className="px-3 sm:px-6 py-3 text-[13px] text-slate-700">{c.render ? c.render(r) : r[c.key]}</td>)}
             </tr>
           ))}
         </tbody>

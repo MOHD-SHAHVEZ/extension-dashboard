@@ -1,65 +1,61 @@
 // src/layouts/AppLayout.jsx
-import React, { useState } from "react";
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/Navbar";
+import MobileBottomNav from "../components/MobileBottomNav";
+import InstallAppButton from "../components/InstallAppButton";
+
+const MAIN_PATHS = ["/", "/dashboard", "/schedule", "/tasks", "/notebooks", "/summaries", "/admin"];
 
 export default function AppLayout({ children }) {
-  const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isMainPage = MAIN_PATHS.includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top bar */}
-      <header className="bg-blue-800 text-white px-4 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setOpen(o => !o)}
-            className="md:hidden p-2 rounded-md hover:bg-blue-700/40"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-          <div className="text-lg font-semibold">AI Summarizer Dashboard</div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-3 text-sm">
-            <div className="text-gray-200">Signed in as</div>
-            <div className="bg-white/10 px-3 py-1 rounded-lg text-white">{user?.username || "Guest"}</div>
-          </div>
-
-          <button
-            onClick={() => logout()}
-            className="bg-white text-blue-800 px-3 py-1 rounded-md font-medium hover:opacity-90"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
-
-      <div className="flex">
-        {/* Sidebar for md+ */}
-        <div className="hidden md:block">
-          <Sidebar />
-        </div>
-
-        {/* Mobile slide-in */}
-        {open && (
-          <div className="fixed inset-0 z-50 md:hidden">
-            <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-            <div className="relative w-64 bg-white h-full shadow-xl p-4">
-              <Sidebar />
-            </div>
-          </div>
-        )}
-
-        {/* Main content */}
-        <main className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
+    <div className="min-h-screen bg-[#f4f6fb]">
+      <div className="hidden md:block">
+        <Sidebar />
       </div>
+
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
+
+      <div className="md:hidden sticky top-0 z-40 h-14 bg-white/90 backdrop-blur-lg shadow-sm flex items-center justify-between px-4 border-b border-slate-100">
+        {isMainPage ? (
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-[16px]">smart_toy</span>
+            </div>
+            <span className="font-semibold text-[14px] text-slate-800">AI Summarizer</span>
+          </Link>
+        ) : (
+          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-slate-600 hover:text-slate-900 bg-slate-100/70 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors">
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span className="text-[13px] font-semibold">Back</span>
+          </button>
+        )}
+        <div className="flex items-center gap-2">
+          <InstallAppButton />
+          <Link to="/profile" className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center" aria-label="Profile">
+          {localStorage.getItem("profile_avatar") ? (
+            <img src={localStorage.getItem("profile_avatar")} alt="" className="w-full h-full object-cover rounded-full" />
+          ) : (
+            <span className="material-symbols-outlined text-white text-[16px]">person</span>
+          )}
+        </Link>
+        </div>
+      </div>
+
+      <main className="md:pl-72 md:pt-16 min-h-screen pb-[4.5rem] md:pb-0">
+        <div className="w-full px-3 sm:px-6 py-4 sm:py-6">
+          {children}
+        </div>
+      </main>
+
+      <MobileBottomNav />
     </div>
   );
 }

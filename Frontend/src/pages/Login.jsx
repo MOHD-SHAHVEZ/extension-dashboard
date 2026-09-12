@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
 export default function Login() {
-  const [form, setForm] = useState({ username: "", password: "", admin: false });
+  const [form, setForm] = useState({ email: "", password: "", admin: false });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -16,19 +16,19 @@ export default function Login() {
     setLoading(true);
     try {
       const creds = {
-        username: form.username,
+        email: form.email,
         password: form.password,
       };
 
-      const res = await login(creds); // returns { token, username, role }
-      toast.push(`Welcome ${res.username}`, { type: "success" });
+      const res = await login(creds); // returns { token, email, role }
+      toast.push(`Welcome ${res.email}`, { type: "success" });
 
       // ✅ redirect by role
       if (form.admin || res.role === "ROLE_ADMIN") navigate("/admin");
       else navigate("/dashboard");
     } catch (err) {
       console.error("Login failed:", err);
-      toast.push("Invalid username or password", { type: "error" });
+      toast.push("Invalid email or password", { type: "error" });
     } finally {
       setLoading(false);
     }
@@ -41,10 +41,10 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="text"
-            placeholder="Username"
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
+            type="email"
+            placeholder="Email address"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
             required
           />

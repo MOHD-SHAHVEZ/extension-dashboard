@@ -2,44 +2,48 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "../pages/Login";
-import Signup from "../pages/Signup";
+import AuthPage from "../pages/AuthPage";
 import Dashboard from "../pages/Dashboard";
+import SchedulePage from "../pages/SchedulePage";
+import TasksPage from "../pages/TasksPage";
 import SummariesPage from "../pages/Summaries";
-import SummaryDetail from "../pages/SummaryDetail";   // ⭐ ADD THIS
+import SummaryDetail from "../pages/SummaryDetail";
 import NotFound from "../pages/NotFound";
 import AdminDashboard from "../pages/AdminDashboard";
 import SettingsPage from "../pages/Settings";
+import Unauthorized from "../pages/Unauthorized";
+import NotebooksPage from "../pages/NotebooksPage";
+import NotebookDetail from "../pages/NotebookDetail";
+import PrivateRoute from "../components/PrivateRoute";
 
 export default function AppRouter() {
   return (
     <Routes>
-
-      {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Auth Pages */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/signup" element={<AuthPage />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* User Dashboard */}
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/schedule" element={<PrivateRoute><SchedulePage /></PrivateRoute>} />
+      <Route path="/tasks" element={<PrivateRoute><TasksPage /></PrivateRoute>} />
+      <Route path="/summaries" element={<PrivateRoute><SummariesPage /></PrivateRoute>} />
+      <Route path="/summaries/:id" element={<PrivateRoute><SummaryDetail /></PrivateRoute>} />
+      <Route path="/notebooks" element={<PrivateRoute><NotebooksPage /></PrivateRoute>} />
+      <Route path="/notebooks/:id" element={<PrivateRoute><NotebookDetail /></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+      <Route path="/settings" element={<Navigate to="/profile" replace />} />
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute roles={["ROLE_ADMIN", "ADMIN"]}>
+            <AdminDashboard />
+          </PrivateRoute>
+        }
+      />
 
-      {/* Summaries List */}
-      <Route path="/summaries" element={<SummariesPage />} />
-
-      {/* ⭐ Summary Read Page (Fix for 404) */}
-      <Route path="/summaries/:id" element={<SummaryDetail />} />
-
-      {/* Admin */}
-      <Route path="/admin" element={<AdminDashboard />} />
-
-      {/* Setting. */}
-      <Route path="/settings" element={<SettingsPage />} />
-
-      {/* 404 */}
       <Route path="*" element={<NotFound />} />
-
     </Routes>
   );
 }

@@ -1,5 +1,5 @@
 // src/context/ToastContext.jsx
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 
 const ToastContext = createContext(null);
 
@@ -13,9 +13,10 @@ export function ToastProvider({ children }) {
   }, []);
 
   const remove = useCallback((id) => setToasts((t) => t.filter((x) => x.id !== id)), []);
+  const value = useMemo(() => ({ push, remove }), [push, remove]);
 
   return (
-    <ToastContext.Provider value={{ push, remove }}>
+    <ToastContext.Provider value={value}>
       {children}
       {/* Toast container */}
       <div className="fixed right-4 bottom-4 z-50 flex flex-col gap-3 items-end">

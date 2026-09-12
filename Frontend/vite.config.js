@@ -3,5 +3,20 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(),]
+  plugins: [react()],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            if (req.headers.authorization) {
+              proxyReq.setHeader("Authorization", req.headers.authorization);
+            }
+          });
+        },
+      },
+    },
+  },
 })
