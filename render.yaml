@@ -30,3 +30,13 @@ services:
         sync: false
       - key: MAIL_PASSWORD
         sync: false
+      - key: MAIL_SMTP_ENABLED
+        value: "false"
+      - key: MAIL_FROM_NAME
+        value: eBag AI
+      - key: MAIL_FROM_EMAIL
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false

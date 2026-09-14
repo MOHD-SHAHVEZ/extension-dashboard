@@ -186,20 +186,20 @@ export default function AuthPage() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-[#f4f6fb] font-sans text-slate-900 antialiased flex flex-col items-center justify-center p-4 sm:p-8 relative">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#f4f6fb] font-sans text-slate-900 antialiased flex flex-col items-center justify-center p-3 sm:p-8 relative">
       
       {/* CENTERED WHITE CARD */}
-      <div className="w-full max-w-[1050px] bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] min-h-0 md:min-h-[640px] relative z-10 overflow-hidden flex flex-col md:block">
+      <div className="w-full max-w-[1050px] bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] min-h-0 md:min-h-[640px] relative z-10 overflow-x-hidden overflow-y-auto md:overflow-hidden flex flex-col md:block">
         
         {/* LOGIN FORM (LEFT HALF) */}
-        <div className={`no-scrollbar w-full md:absolute md:top-0 md:left-0 md:w-1/2 md:h-full p-6 sm:p-10 flex flex-col justify-center overflow-y-auto transition-opacity duration-700 ${!isSignup ? 'opacity-100 z-10 pointer-events-auto' : 'md:opacity-0 md:z-0 md:pointer-events-none hidden md:flex'}`}>
+        <div className={`no-scrollbar w-full md:absolute md:top-0 md:left-0 md:w-1/2 md:h-full p-4 sm:p-10 flex flex-col justify-center overflow-y-auto overflow-x-hidden transition-opacity duration-700 ${!isSignup ? 'opacity-100 z-10 pointer-events-auto' : 'md:opacity-0 md:z-0 md:pointer-events-none hidden md:flex'}`}>
           <div className="w-full max-w-[420px] mx-auto my-auto py-4">
             <LoginForm onNavigate={() => navigate('/signup')} />
           </div>
         </div>
 
         {/* SIGNUP FORM (RIGHT HALF) */}
-        <div className={`no-scrollbar w-full md:absolute md:top-0 md:right-0 md:w-1/2 md:h-full p-6 sm:p-10 flex flex-col justify-center overflow-y-auto transition-opacity duration-700 ${isSignup ? 'opacity-100 z-10 pointer-events-auto' : 'md:opacity-0 md:z-0 md:pointer-events-none hidden md:flex'}`}>
+        <div className={`no-scrollbar w-full md:absolute md:top-0 md:right-0 md:w-1/2 md:h-full p-4 sm:p-10 flex flex-col justify-center overflow-y-auto overflow-x-hidden transition-opacity duration-700 ${isSignup ? 'opacity-100 z-10 pointer-events-auto' : 'md:opacity-0 md:z-0 md:pointer-events-none hidden md:flex'}`}>
           <div className="w-full max-w-[420px] mx-auto my-auto py-4">
             <SignupForm isEmbedded={true} onNavigate={() => navigate('/login')} />
           </div>
@@ -226,9 +226,12 @@ export default function AuthPage() {
             <div className="relative z-10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center backdrop-blur-md">
-                  <span className="material-symbols-outlined text-cyan-300 text-[18px]">smart_toy</span>
+                  <span className="material-symbols-outlined text-cyan-300 text-[18px]">backpack</span>
                 </div>
-                <span className="font-bold tracking-tight text-white">AI Summarizer</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-bold tracking-tight text-white leading-tight">eBag AI</span>
+                  <span className="text-[10px] font-medium text-slate-300 truncate">Notes, plan &amp; AI summaries</span>
+                </div>
               </div>
               <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] tracking-wider font-semibold backdrop-blur-md">
                 PRO FEATURES
@@ -239,15 +242,15 @@ export default function AuthPage() {
             <div className="relative z-10 mt-6 flex flex-col gap-3">
                <div className="flex items-center gap-3 text-slate-300">
                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400"></div>
-                 <span className="font-medium text-sm">Instant YouTube Insights</span>
+                 <span className="font-medium text-sm">AI summaries for lessons &amp; links</span>
                </div>
                <div className="flex items-center gap-3 text-slate-300">
                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
-                 <span className="font-medium text-sm">Article Summarization</span>
+                 <span className="font-medium text-sm">Daily plan and tasks</span>
                </div>
                <div className="flex items-center gap-3 text-slate-300">
                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-                 <span className="font-medium text-sm">Verified Credentials</span>
+                 <span className="font-medium text-sm">Notebooks in one desk</span>
                </div>
             </div>
 

@@ -168,8 +168,19 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,https://your-app.vercel.app,https://*
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary |
 | `CLOUDINARY_API_KEY` | Cloudinary |
 | `CLOUDINARY_API_SECRET` | Cloudinary |
-| `MAIL_USERNAME` | Gmail (optional, OTP email) |
-| `MAIL_PASSWORD` | Gmail App Password (optional) |
+| `BREVO_API_KEY` | **Recommended for OTP on Render** (HTTPS). Gmail SMTP port 587 is blocked. |
+| `MAIL_FROM_EMAIL` | Same Gmail you verify as a Brevo sender |
+| `MAIL_FROM_NAME` | `eBag AI` |
+| `MAIL_SMTP_ENABLED` | Leave unset/`false` on Render. `true` only on your laptop. |
+
+Do **not** rely on `MAIL_USERNAME` / `MAIL_PASSWORD` on Render — those use SMTP and will time out.
+
+**OTP email (free, works on Render):**
+1. Sign up at [brevo.com](https://www.brevo.com) (free).
+2. **SMTP & API → API keys** → create a key.
+3. **Senders** → add your Gmail → click the verify link in your inbox.
+4. Render env: `BREVO_API_KEY=...` and `MAIL_FROM_EMAIL=your-verified-gmail`.
+5. Redeploy (or wait for auto-deploy after you push this backend change).
 
 `PORT` Render **khud** set karta hai. Manually mat add karo.
 

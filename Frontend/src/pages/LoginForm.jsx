@@ -33,7 +33,7 @@ export default function LoginForm({ onNavigate }) {
       <div className="w-full flex flex-col items-center text-center mb-8">
         <div className="relative mb-5">
           <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-[0_8px_24px_-6px_rgba(79,70,229,0.45)] ring-1 ring-indigo-500/20">
-            <span className="material-symbols-outlined text-white text-[26px]">auto_awesome</span>
+            <span className="material-symbols-outlined text-white text-[26px]">backpack</span>
           </div>
         </div>
 
@@ -43,16 +43,9 @@ export default function LoginForm({ onNavigate }) {
         </div>
 
         <h2 className="text-[32px] sm:text-[34px] font-bold tracking-tight text-slate-900 leading-none">
-          Sign in
+          eBag AI
         </h2>
-
-        <div className="mt-3 flex items-center gap-2.5">
-          <span className="w-8 h-px bg-gradient-to-r from-transparent to-indigo-300"></span>
-          <p className="text-[13px] font-semibold tracking-[0.18em] uppercase text-indigo-600">
-            AI Summarizer
-          </p>
-          <span className="w-8 h-px bg-gradient-to-l from-transparent to-indigo-300"></span>
-        </div>
+        <p className="mt-2 text-[13px] font-medium text-slate-500">Notes, plan &amp; AI summaries</p>
       </div>
 
       <div className="w-full flex flex-col">

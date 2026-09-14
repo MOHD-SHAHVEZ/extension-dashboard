@@ -308,6 +308,71 @@ body {
   font-size: inherit;
 }
 
+.reader-paper-day {
+  background: #fbfcfe;
+  box-shadow: 0 28px 60px -24px rgba(15, 23, 42, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.reader-paper-night {
+  background: #111827;
+  box-shadow: 0 28px 60px -24px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.reader-paper-night .lesson-reader-prose,
+.reader-paper-night .lesson-reader-prose p,
+.reader-paper-night .lesson-reader-prose li,
+.reader-paper-night .lesson-reader-prose td {
+  color: #d1d5db;
+}
+
+.reader-paper-night .lesson-reader-prose h1,
+.reader-paper-night .lesson-reader-prose h2,
+.reader-paper-night .lesson-reader-prose strong,
+.reader-paper-night .lesson-reader-prose th {
+  color: #f3f4f6 !important;
+}
+
+.reader-paper-night .lesson-reader-prose h3 {
+  color: #c7d2fe !important;
+}
+
+.reader-paper-night .lesson-reader-prose em {
+  color: #94a3b8 !important;
+}
+
+.reader-paper-night .lesson-reader-prose h2,
+.reader-paper-night .lesson-reader-prose hr,
+.reader-paper-night .lesson-reader-prose table,
+.reader-paper-night .lesson-reader-prose th,
+.reader-paper-night .lesson-reader-prose td {
+  border-color: #334155 !important;
+}
+
+.reader-paper-night .lesson-reader-prose blockquote {
+  background: rgba(79, 70, 229, 0.16) !important;
+  border-color: #4338ca !important;
+  color: #e2e8f0 !important;
+}
+
+.reader-paper-night .lesson-reader-prose a {
+  color: #a5b4fc !important;
+  text-decoration-color: #6366f1 !important;
+}
+
+.reader-paper-night .lesson-reader-prose pre,
+.reader-paper-night .lesson-reader-prose code {
+  background: #0b1220 !important;
+  border-color: #334155 !important;
+  color: #e5e7eb !important;
+}
+
+.reader-paper-night .lesson-reader-prose table,
+.reader-paper-night .lesson-reader-prose thead,
+.reader-paper-night .reader-table-wrap {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
 .notebook-cover {
   transform: translateY(0);
   transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);

@@ -365,6 +365,7 @@ function StepOTP({ form, otp, onOtpChange, onVerify, onResend, onBack, verifying
             className={`otp-input${digit ? " filled" : ""}`}
             type="text"
             inputMode="numeric"
+            autoComplete={i === 0 ? "one-time-code" : "off"}
             maxLength={1}
             value={digit}
             onChange={(e) => handleChange(i, e.target.value)}
@@ -409,14 +410,14 @@ function StepOTP({ form, otp, onOtpChange, onVerify, onResend, onBack, verifying
         </button>
         <button type="button" className="btn-ghost" onClick={onBack}>
           <MaterialIcon name="arrow_back" size="18px" />
-          <span>Back to previous step</span>
+          <span>Back</span>
         </button>
       </div>
 
       {/* Security Badge */}
       <div className="security-badge">
         <MaterialIcon name="verified_user" size="18px" filled className="security-badge-icon" />
-        <span>End-to-end 256-bit encrypted identity verification</span>
+        <span className="security-badge-text">Encrypted identity verification</span>
       </div>
     </div>
   );
@@ -827,8 +828,8 @@ export default function Signup({ isEmbedded, onNavigate }) {
           <header className="signup-header">
             <div className="signup-header-inner">
               <div className="header-brand">
-                <span className="header-logo-text">Nexus</span>
-                <span className="header-badge">Account Setup</span>
+                <span className="header-logo-text">eBag AI</span>
+                <span className="header-badge header-tagline">Notes, plan &amp; AI summaries</span>
               </div>
             </div>
           </header>
@@ -859,8 +860,8 @@ export default function Signup({ isEmbedded, onNavigate }) {
         <header className="signup-header">
           <div className="signup-header-inner">
             <div className="header-brand">
-              <span className="header-logo-text">Nexus</span>
-              <span className="header-badge">Account Setup</span>
+              <span className="header-logo-text">eBag AI</span>
+              <span className="header-badge header-tagline">Notes, plan &amp; AI summaries</span>
             </div>
             <div className="header-right">
               <nav className="header-nav">
@@ -960,7 +961,7 @@ export default function Signup({ isEmbedded, onNavigate }) {
 function FooterContent() {
   return (
     <div className="footer-inner">
-      <span className="footer-copyright">© 2025 Nexus Technologies Inc. All rights reserved.</span>
+      <span className="footer-copyright">© 2026 eBag AI. Notes, plan &amp; AI summaries.</span>
       <div className="footer-badges">
         <div className="footer-badge">
           <MaterialIcon name="lock" size="16px" className="footer-badge-icon secondary" />

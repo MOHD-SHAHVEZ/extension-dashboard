@@ -1,7 +1,7 @@
 {
-  "name": "AI Summarizer",
-  "short_name": "Summarizer",
-  "description": "Study cockpit — notebooks, schedule, tasks, and AI summaries",
+  "name": "eBag AI",
+  "short_name": "eBag AI",
+  "description": "Notes, plan & AI summaries",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

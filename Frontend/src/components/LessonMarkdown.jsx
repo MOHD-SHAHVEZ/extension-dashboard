@@ -128,7 +128,7 @@ const readerComponents = {
     return <code className="font-mono">{children}</code>;
   },
   table: ({ children }) => (
-    <div className="my-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <div className="reader-table-wrap my-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
       <table className="w-full border-collapse text-left text-[0.92em]">{children}</table>
     </div>
   ),
