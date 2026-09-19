@@ -1,5 +1,6 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
+import { ensureFreshAccessToken } from "../services/api"
 
 function decodeToken(token) {
   if (!token) return null
@@ -15,27 +16,75 @@ function decodeToken(token) {
   }
 }
 
+function clearSession() {
+  localStorage.removeItem("token")
+  localStorage.removeItem("refreshToken")
+  localStorage.removeItem("email")
+  localStorage.removeItem("role")
+}
+
 export default function PrivateRoute({ children, roles }) {
-  const token = localStorage.getItem("token")
-  if (!token) return <Navigate to="/login" replace />
+  const [ready, setReady] = useState(false)
+  const [allowed, setAllowed] = useState(false)
+  const rolesKey = Array.isArray(roles) ? roles.join("|") : ""
 
-  const payload = decodeToken(token)
-  if (payload?.exp) {
-    const expMs = payload.exp > 1e12 ? payload.exp : payload.exp * 1000
-    // 60s clock skew — do not kick a brand-new session
-    if (expMs + 60_000 < Date.now()) {
-      localStorage.removeItem("token")
-      localStorage.removeItem("email")
-      localStorage.removeItem("role")
-      return <Navigate to="/login" replace />
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const existing = localStorage.getItem("token")
+      const refresh = localStorage.getItem("refreshToken")
+      if (!existing && !refresh) {
+        if (!cancelled) {
+          setAllowed(false)
+          setReady(true)
+        }
+        return
+      }
+
+      await ensureFreshAccessToken()
+      if (cancelled) return
+
+      const token = localStorage.getItem("token")
+      if (!token) {
+        clearSession()
+        setAllowed(false)
+        setReady(true)
+        return
+      }
+
+      const payload = decodeToken(token)
+      if (payload?.exp) {
+        const expMs = payload.exp > 1e12 ? payload.exp : payload.exp * 1000
+        if (expMs + 60_000 < Date.now()) {
+          clearSession()
+          setAllowed(false)
+          setReady(true)
+          return
+        }
+      }
+
+      if (rolesKey) {
+        const roleList = rolesKey.split("|").filter(Boolean)
+        const role = payload?.role || localStorage.getItem("role") || ""
+        const ok = roleList.some((r) => r === role || `ROLE_${r}` === role || r === `ROLE_${role}`)
+        if (!ok) {
+          setAllowed("unauthorized")
+          setReady(true)
+          return
+        }
+      }
+
+      setAllowed(true)
+      setReady(true)
+    })()
+
+    return () => {
+      cancelled = true
     }
-  }
+  }, [rolesKey])
 
-  if (roles && roles.length) {
-    const role = payload?.role || localStorage.getItem("role") || ""
-    const allowed = roles.some((r) => r === role || `ROLE_${r}` === role || r === `ROLE_${role}`)
-    if (!allowed) return <Navigate to="/unauthorized" replace />
-  }
-
+  if (!ready) return null
+  if (allowed === "unauthorized") return <Navigate to="/unauthorized" replace />
+  if (!allowed) return <Navigate to="/login" replace />
   return children
 }

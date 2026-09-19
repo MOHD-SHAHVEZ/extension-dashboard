@@ -34,7 +34,9 @@ export function isAuthenticated() {
 // Logout (clear localStorage)
 export function logout() {
   localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
   localStorage.removeItem("role");
+  localStorage.removeItem("email");
   localStorage.removeItem("username");
 }
 

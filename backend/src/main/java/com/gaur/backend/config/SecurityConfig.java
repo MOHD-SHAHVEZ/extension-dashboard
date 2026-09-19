@@ -131,6 +131,7 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/verify-otp",
                                 "/api/auth/resend-otp",
+                                "/api/auth/refresh",
                                 "/api/auth/register-defaults",
                                 "/api/otp/**",
                                 "/auth/**",

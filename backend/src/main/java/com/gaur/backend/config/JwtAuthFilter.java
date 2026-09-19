@@ -42,6 +42,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/auth/register")
                 || path.startsWith("/api/auth/verify-otp")
                 || path.startsWith("/api/auth/resend-otp")
+                || path.startsWith("/api/auth/refresh")
                 || path.startsWith("/api/otp");
     }
 
@@ -61,14 +62,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
             return;
         }
-        if ("otp".equals(peekTokenType(token))) {
+        String peeked = peekTokenType(token);
+        if ("otp".equals(peeked)) {
             log.debug("Ignoring OTP verification token on {} {}", req.getMethod(), req.getRequestURI());
+            chain.doFilter(req, res);
+            return;
+        }
+        if ("refresh".equals(peeked)) {
+            log.debug("Ignoring refresh token on protected route {} {}", req.getMethod(), req.getRequestURI());
             chain.doFilter(req, res);
             return;
         }
 
         try {
             DecodedJWT decoded = jwtService.verify(token);
+            if (jwtService.isRefreshToken(decoded)) {
+                log.debug("Refresh token cannot authenticate {} {}", req.getMethod(), req.getRequestURI());
+                chain.doFilter(req, res);
+                return;
+            }
+
             String user = decoded.getSubject();
             if (user == null || user.isBlank()) {
                 log.warn("JWT has empty subject for {} {}", req.getMethod(), req.getRequestURI());
@@ -76,10 +89,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String role = decoded.getClaim("role").asString();
-            String authority = (role == null || role.isBlank())
-                    ? "ROLE_USER"
-                    : (role.startsWith("ROLE_") ? role : "ROLE_" + role);
+            String role = jwtService.getRoleFromToken(decoded);
+            String authority = role.startsWith("ROLE_") ? role : "ROLE_" + role;
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -144,6 +155,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (parts.length < 2) return null;
             String json = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
             if (json.contains("\"token_type\":\"otp\"")) return "otp";
+            if (json.contains("\"type\":\"refresh\"")) return "refresh";
+            if (json.contains("\"type\":\"access\"")) return "access";
             return null;
         } catch (Exception ignored) {
             return null;

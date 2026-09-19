@@ -5,7 +5,9 @@ import {
   register as registerApi,
   verifyOtp as verifyOtpApi,
   resendOtp as resendOtpApi,
-  updateProfile as updateProfileApi
+  updateProfile as updateProfileApi,
+  persistAuthSession,
+  logout as logoutApi,
 } from "../services/api";
 
 const AuthContext = createContext(null);
@@ -18,11 +20,9 @@ export const AuthProvider = ({ children }) => {
   });
 
   async function login(credentials) {
-    const res = await loginApi(credentials); // {token, email, role}
-    if (!res || !res.token) throw new Error("Invalid login response");
-    localStorage.setItem("token", res.token);
-    localStorage.setItem("email", res.email);
-    localStorage.setItem("role", res.role);
+    const res = await loginApi(credentials); // {token, refreshToken, email, role}
+    if (!res || !(res.token || res.accessToken)) throw new Error("Invalid login response");
+    persistAuthSession(res);
     setUser({ email: res.email, role: res.role });
     return res;
   }
@@ -33,10 +33,8 @@ export const AuthProvider = ({ children }) => {
 
   async function verifyOtp(data) {
     const res = await verifyOtpApi(data);
-    if (!res || !res.token) throw new Error("Invalid verification response");
-    localStorage.setItem("token", res.token);
-    localStorage.setItem("email", res.email);
-    localStorage.setItem("role", res.role);
+    if (!res || !(res.token || res.accessToken)) throw new Error("Invalid verification response");
+    persistAuthSession(res);
     setUser({ email: res.email, role: res.role });
     return res;
   }
@@ -50,9 +48,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("email");
-    localStorage.removeItem("role");
+    logoutApi();
     setUser(null);
   }
 

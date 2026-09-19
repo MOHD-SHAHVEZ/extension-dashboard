@@ -294,7 +294,9 @@ body {
 .reader-scroll {
   scrollbar-width: thin;
   scrollbar-color: #64748b transparent;
-  contain: layout paint;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 .reader-scroll::-webkit-scrollbar {
   width: 8px;
@@ -302,6 +304,46 @@ body {
 .reader-scroll::-webkit-scrollbar-thumb {
   background: #64748b;
   border-radius: 99px;
+}
+.reader-chrome {
+  position: relative;
+  z-index: 15;
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.55) 70%, transparent);
+}
+.reader-chrome-hidden {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+.reader-paper-shell {
+  max-width: min(1100px, 100%);
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+  width: calc(100% - 0.5rem);
+}
+@media (min-width: 640px) {
+  .reader-paper-shell {
+    width: calc(100% - 1.5rem);
+  }
+}
+.reader-paper-pad {
+  padding: 1.25rem 1.15rem 1.75rem;
+}
+@media (min-width: 640px) {
+  .reader-paper-pad {
+    padding: 2.5rem 3.25rem 3rem;
+  }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .reader-paper-shell {
+    max-width: min(1200px, 100%);
+    width: calc(100% - 0.75rem);
+    border-radius: 0.75rem;
+  }
+  .reader-paper-pad {
+    padding: 0.85rem 1.25rem 1.25rem;
+  }
 }
 .reader-body .lesson-reader-prose p,
 .reader-body .lesson-reader-prose li {

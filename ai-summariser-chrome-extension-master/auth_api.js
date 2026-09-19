@@ -8,8 +8,11 @@ async function apiLogin({ email, password }) {
   return apiRequest("/auth/login", { method: "POST", body: { email, password } });
 }
 
-async function apiRefresh({ refreshToken }) {
-  return apiRequest("/auth/refresh", { method: "POST", body: { refreshToken } });
+async function apiRefresh({ refreshToken, token }) {
+  return apiRequest("/api/auth/refresh", {
+    method: "POST",
+    body: refreshToken ? { refreshToken } : { token },
+  });
 }
 
 

@@ -1,8 +1,10 @@
 package com.gaur.backend.controller;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.gaur.backend.dto.AuthRequest;
 import com.gaur.backend.dto.AuthResponse;
 import com.gaur.backend.dto.ChangePasswordRequest;
+import com.gaur.backend.dto.RefreshTokenRequest;
 import com.gaur.backend.dto.RegisterRequest;
 import com.gaur.backend.dto.VerifyOtpRequest;
 import com.gaur.backend.model.AppUser;
@@ -78,8 +80,57 @@ public class AuthController {
                     .body(Map.of("error", "Invalid username or password"));
         }
 
-        String token = jwtService.createToken(user.getUsername(), user.getRole());
-        return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole()));
+        return ResponseEntity.ok(issueAuth(user));
+    }
+
+    /**
+     * Mint a new access token from a refresh token, or from a still-valid access token
+     * (sliding renewal). Body: { "refreshToken" } preferred; { "token" } or Authorization
+     * Bearer also accepted for access-token-based renewal.
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(
+            @RequestBody(required = false) RefreshTokenRequest req,
+            @RequestHeader(value = "Authorization", required = false) String authorization
+    ) {
+        String presented = firstNonBlank(
+                req != null ? req.getRefreshToken() : null,
+                req != null ? req.getToken() : null,
+                extractBearer(authorization)
+        );
+        if (isBlank(presented)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "refreshToken or token required"));
+        }
+
+        try {
+            DecodedJWT jwt = jwtService.verifyForRefresh(presented);
+            String username = jwtService.getUsernameFromToken(jwt);
+            if (isBlank(username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid or expired refresh token"));
+            }
+
+            Optional<AppUser> maybe = userService.findByUsername(username);
+            if (maybe.isEmpty()) {
+                maybe = userService.findByUsername(username.trim().toLowerCase());
+            }
+            if (maybe.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid or expired refresh token"));
+            }
+
+            AppUser user = maybe.get();
+            if ("ROLE_UNVERIFIED".equals(user.getRole())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Please verify your email first"));
+            }
+
+            return ResponseEntity.ok(issueAuth(user));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired refresh token"));
+        }
     }
 
     @PostMapping("/change-password")
@@ -193,8 +244,7 @@ public class AuthController {
                     userService.save(user);
                 }
                 
-                String token = jwtService.createToken(user.getUsername(), user.getRole());
-                yield ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole()));
+                yield ResponseEntity.ok(issueAuth(user));
             }
             case INCORRECT -> {
                 Map<String, Object> body = new LinkedHashMap<>();
@@ -265,6 +315,36 @@ public class AuthController {
             userService.save(user);
         }
         return ResponseEntity.ok(Map.of("message", "defaults registered (if absent)"));
+    }
+
+    private AuthResponse issueAuth(AppUser user) {
+        String access = jwtService.createAccessToken(user.getUsername(), user.getRole());
+        String refresh = jwtService.createRefreshToken(user.getUsername(), user.getRole());
+        return new AuthResponse(
+                access,
+                refresh,
+                user.getUsername(),
+                user.getRole(),
+                jwtService.getAccessExpiresInSeconds()
+        );
+    }
+
+    private static String extractBearer(String header) {
+        if (header == null || header.isBlank()) return null;
+        String value = header.trim();
+        if (value.length() > 7 && value.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            String token = value.substring(7).trim();
+            return token.isEmpty() ? null : token;
+        }
+        return null;
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) return null;
+        for (String v : values) {
+            if (!isBlank(v)) return v.trim();
+        }
+        return null;
     }
 
     private static boolean isBlank(String s) {

@@ -3,6 +3,11 @@
 // src/services/api.js
 const BASE = String(import.meta.env.VITE_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
 
+/** Refresh when access token has less than this much life left. */
+const REFRESH_SKEW_MS = 5 * 60 * 1000;
+
+let refreshPromise = null;
+
 function makeError(details) {
   const err = new Error(details.message || `API error ${details.status || ""}`);
   Object.assign(err, details);
@@ -15,8 +20,123 @@ function readAccessToken() {
   return raw.trim().replace(/^Bearer\s+/i, "").replace(/^["']|["']$/g, "");
 }
 
-async function request(path, { method = "GET", body, headers = {} } = {}) {
+function readRefreshToken() {
+  const raw = localStorage.getItem("refreshToken");
+  if (!raw) return "";
+  return raw.trim().replace(/^Bearer\s+/i, "").replace(/^["']|["']$/g, "");
+}
+
+function decodeJwtPayload(token) {
+  if (!token) return null;
   try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payloadB64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const pad = payloadB64.length % 4;
+    const padded = payloadB64 + (pad ? "=".repeat(4 - pad) : "");
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+function tokenExpiresAtMs(token) {
+  const payload = decodeJwtPayload(token);
+  if (!payload?.exp) return null;
+  return payload.exp > 1e12 ? payload.exp : payload.exp * 1000;
+}
+
+function isTokenExpiringSoon(token, skewMs = REFRESH_SKEW_MS) {
+  const expMs = tokenExpiresAtMs(token);
+  if (expMs == null) return false;
+  return expMs - skewMs <= Date.now();
+}
+
+export function persistAuthSession(res) {
+  if (!res) return;
+  const access = res.token || res.accessToken;
+  if (access) localStorage.setItem("token", access);
+  if (res.refreshToken) localStorage.setItem("refreshToken", res.refreshToken);
+  if (res.email != null) localStorage.setItem("email", res.email || "");
+  if (res.role != null) localStorage.setItem("role", res.role || "");
+}
+
+function clearAuthStorage() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("email");
+  localStorage.removeItem("role");
+}
+
+async function refreshAccessToken() {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    const refreshToken = readRefreshToken();
+    const accessToken = readAccessToken();
+    if (!refreshToken && !accessToken) {
+      throw makeError({ status: 401, message: "No token available to refresh" });
+    }
+
+    const body = refreshToken
+      ? { refreshToken }
+      : { token: accessToken };
+
+    const res = await fetch(`${BASE}/api/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      mode: "cors",
+      cache: "no-store",
+    });
+
+    const text = await res.text().catch(() => null);
+    let parsed;
+    try {
+      parsed = text ? JSON.parse(text) : null;
+    } catch {
+      parsed = text;
+    }
+
+    if (!res.ok) {
+      clearAuthStorage();
+      throw makeError({
+        url: `${BASE}/api/auth/refresh`,
+        status: res.status,
+        statusText: res.statusText,
+        body: parsed,
+        message: (parsed && (parsed.message || parsed.error)) || "Session expired",
+      });
+    }
+
+    persistAuthSession(parsed);
+    return parsed;
+  })().finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
+}
+
+/** Ensure a usable access token — refreshes when missing/near expiry. */
+export async function ensureFreshAccessToken() {
+  const token = readAccessToken();
+  if (token && !isTokenExpiringSoon(token)) return token;
+  if (!readRefreshToken() && !token) return "";
+  try {
+    await refreshAccessToken();
+    return readAccessToken();
+  } catch {
+    return readAccessToken();
+  }
+}
+
+async function request(path, { method = "GET", body, headers = {}, _retry = true } = {}) {
+  try {
+    if (_retry && !path.startsWith("/api/auth/")) {
+      await ensureFreshAccessToken();
+    }
+
     const token = readAccessToken();
     const nextHeaders = new Headers(headers);
     if (token) nextHeaders.set("Authorization", `Bearer ${token}`);
@@ -45,6 +165,21 @@ async function request(path, { method = "GET", body, headers = {} } = {}) {
     }
 
     if (!res.ok) {
+      const canRefresh =
+        res.status === 401 &&
+        _retry &&
+        !path.startsWith("/api/auth/") &&
+        (!!readRefreshToken() || !!token);
+
+      if (canRefresh) {
+        try {
+          await refreshAccessToken();
+          return request(path, { method, body, headers, _retry: false });
+        } catch {
+          /* fall through to throw original */
+        }
+      }
+
       if (res.status === 401 && token) {
         console.warn(`API 401 with token present: ${method} ${path}`);
       }
@@ -72,35 +207,35 @@ async function request(path, { method = "GET", body, headers = {} } = {}) {
 
 /* ---------------- AUTH ---------------- */
 export async function login(credentials) {
-  const res = await request("/api/auth/login", { method: "POST", body: credentials });
-  if (res?.token) {
-    localStorage.setItem("token", res.token);
-    localStorage.setItem("email", res.email || "");
-    localStorage.setItem("role", res.role || "");
-  }
+  const res = await request("/api/auth/login", { method: "POST", body: credentials, _retry: false });
+  persistAuthSession(res);
   return res;
 }
 
 export async function register(credentials) {
-  return request("/api/auth/register", { method: "POST", body: credentials });
+  return request("/api/auth/register", { method: "POST", body: credentials, _retry: false });
 }
 
 export async function verifyOtp(data) {
-  return request("/api/auth/verify-otp", { method: "POST", body: data });
+  const res = await request("/api/auth/verify-otp", { method: "POST", body: data, _retry: false });
+  if (res?.token || res?.accessToken) persistAuthSession(res);
+  return res;
 }
 
 export async function resendOtp(data) {
-  return request("/api/auth/resend-otp", { method: "POST", body: data });
+  return request("/api/auth/resend-otp", { method: "POST", body: data, _retry: false });
+}
+
+export async function refreshSession() {
+  return refreshAccessToken();
 }
 
 export async function registerDefaults() {
-  return request("/api/auth/register-defaults", { method: "POST" });
+  return request("/api/auth/register-defaults", { method: "POST", _retry: false });
 }
 
 export function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("email");
-  localStorage.removeItem("role");
+  clearAuthStorage();
 }
 
 /* --------------- SUMMARIES -------------- */
@@ -292,9 +427,10 @@ export async function deleteLesson(id) {
   return request(`/api/lessons/${id}`, { method: "DELETE" });
 }
 
-export async function importLessonFile(lessonId, file) {
+export async function importLessonFile(lessonId, file, _retry = true) {
   if (lessonId === undefined || lessonId === null) throw new Error("Missing lessonId");
   if (!file) throw new Error("Choose a file first");
+  if (_retry) await ensureFreshAccessToken();
   const token = readAccessToken();
   const form = new FormData();
   form.append("file", file);
@@ -318,6 +454,14 @@ export async function importLessonFile(lessonId, file) {
   }
 
   if (!res.ok) {
+    if (res.status === 401 && _retry && (readRefreshToken() || token)) {
+      try {
+        await refreshAccessToken();
+        return importLessonFile(lessonId, file, false);
+      } catch {
+        /* fall through */
+      }
+    }
     const fallback = (parsed && (parsed.message || parsed.error || parsed.reason))
       ? (parsed.message || parsed.error || parsed.reason)
       : `Request failed ${res.status}`;
@@ -386,7 +530,8 @@ export async function updateProfile(data) {
   return request("/api/users/me", { method: "PATCH", body: data });
 }
 
-export async function uploadAvatar(file) {
+export async function uploadAvatar(file, _retry = true) {
+  if (_retry) await ensureFreshAccessToken();
   const token = readAccessToken();
   const form = new FormData();
   form.append("file", file);
@@ -410,6 +555,14 @@ export async function uploadAvatar(file) {
   }
 
   if (!res.ok) {
+    if (res.status === 401 && _retry && (readRefreshToken() || token)) {
+      try {
+        await refreshAccessToken();
+        return uploadAvatar(file, false);
+      } catch {
+        /* fall through */
+      }
+    }
     const fallback = (parsed && (parsed.message || parsed.error || parsed.reason))
       ? (parsed.message || parsed.error || parsed.reason)
       : `Request failed ${res.status}`;
