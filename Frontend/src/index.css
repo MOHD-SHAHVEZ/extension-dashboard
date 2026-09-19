@@ -240,6 +240,13 @@ body {
   scrollbar-width: none;
 }
 
+/* Mobile notebook Write/Preview pane — must scroll inside the card */
+.lesson-pane-scroll {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
+}
+
 @keyframes readerBackdropIn {
   from { opacity: 0; }
   to { opacity: 1; }

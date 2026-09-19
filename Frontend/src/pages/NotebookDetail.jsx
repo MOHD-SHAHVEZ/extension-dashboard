@@ -307,8 +307,8 @@ export default function NotebookDetail() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
+      <div className="max-w-6xl mx-auto flex flex-col gap-3 max-lg:h-[calc(100dvh-10rem)] max-lg:min-h-0 max-lg:overflow-hidden">
+        <div className="flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
@@ -325,14 +325,14 @@ export default function NotebookDetail() {
           </div>
         </div>
 
-        <div className="lg:hidden flex items-center gap-2 text-[11px] font-semibold text-slate-400">
+        <div className="lg:hidden flex items-center gap-2 text-[11px] font-semibold text-slate-400 shrink-0">
           <span className={mobilePane === "toc" ? "text-indigo-600" : ""}>1. Lessons</span>
           <span>→</span>
           <span className={mobilePane === "editor" ? "text-indigo-600" : ""}>2. Write notes</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 lg:h-[calc(100dvh-8.75rem)]">
-          <aside className={`${mobilePane === "editor" ? "hidden lg:flex" : "flex"} bg-white rounded-2xl shadow-sm p-4 flex-col min-h-[60vh] lg:min-h-0 lg:max-h-none lg:h-full overflow-hidden`}>
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 flex-1 min-h-0 lg:h-[calc(100dvh-8.75rem)] lg:flex-none">
+          <aside className={`${mobilePane === "editor" ? "hidden lg:flex" : "flex"} bg-white rounded-2xl shadow-sm p-4 flex-col min-h-0 h-full overflow-hidden`}>
             <div className="flex items-center justify-between mb-3 shrink-0">
               <h2 className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Table of contents</h2>
               <button
@@ -344,7 +344,7 @@ export default function NotebookDetail() {
                 {adding ? "Adding…" : "+ Add Lesson"}
               </button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y space-y-1">
               {lessons.length === 0 && (
                 <p className="text-[13px] text-slate-400 py-10 text-center">No lessons yet. Add your first chapter note.</p>
               )}
@@ -368,7 +368,7 @@ export default function NotebookDetail() {
             </div>
           </aside>
 
-          <section className={`${mobilePane === "toc" ? "hidden lg:flex" : "flex"} relative rounded-2xl shadow-sm border border-slate-200 bg-white flex-col min-h-[70vh] lg:min-h-0 lg:h-full overflow-hidden`}>
+          <section className={`${mobilePane === "toc" ? "hidden lg:flex" : "flex"} relative rounded-2xl shadow-sm border border-slate-200 bg-white flex-col min-h-0 h-full overflow-hidden`}>
             {!selectedId ? (
               <div className="flex-1 flex items-center justify-center text-slate-400">
                 Select or add a lesson to start writing.
@@ -469,7 +469,7 @@ export default function NotebookDetail() {
                 </div>
 
                 {savedSummaries.length > 0 && (
-                  <div className="mx-5 mt-4 rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3">
+                  <div className="mx-5 mt-4 rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3 shrink-0 max-h-[28vh] overflow-y-auto overscroll-y-contain">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-violet-700">
                         Saved AI summaries
@@ -529,7 +529,10 @@ export default function NotebookDetail() {
                   />
                 </div>
 
-                <div ref={lessonScrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+                <div
+                  ref={lessonScrollRef}
+                  className="lesson-pane-scroll flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y"
+                >
                   {mode === "edit" ? (
                     <textarea
                       value={content}
@@ -543,17 +546,17 @@ export default function NotebookDetail() {
                         }
                       }}
                       placeholder="Type notes, or upload a .md / .txt / .pdf file. Text will appear here."
-                      className="w-full min-h-[280px] sm:min-h-[520px] resize-y bg-white px-4 sm:px-5 py-4 text-[16px] leading-7 text-slate-800 outline-none whitespace-pre-wrap"
+                      className="w-full min-h-full h-full resize-none bg-white px-4 sm:px-5 py-4 text-[16px] leading-7 text-slate-800 outline-none whitespace-pre-wrap"
                     />
                   ) : (
-                    <div className="px-5 py-4">
+                    <div className="px-5 py-4 pb-8">
                       <LessonMarkdown tables={contentIsMarkdown}>
                         {previewMarkdown}
                       </LessonMarkdown>
                     </div>
                   )}
                   {lesson?.updatedAt && (
-                    <p className="text-[11px] text-slate-400 px-5 pb-2">
+                    <p className="text-[11px] text-slate-400 px-5 pb-4">
                       Last saved {new Date(lesson.updatedAt).toLocaleString()}
                     </p>
                   )}
